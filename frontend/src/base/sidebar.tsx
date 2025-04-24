@@ -6,7 +6,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen }) => {
     return (
-        <aside className={`bg-zinc-800 text-white w-64 p-4 space-y-4 transition-transform duration-300 
+        <aside className={`dark:bg-zinc-900 dark:text-white w-64 p-4 space-y-4 transition-transform duration-300 
             fixed top-0 left-0 h-full z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:relative`}>
             <h2 className="text-2xl font-bold mb-4">My App</h2>
             <nav className="flex flex-col gap-2">
@@ -16,6 +16,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen }) => {
                 <a href="#" className="hover:bg-zinc-700 p-2 rounded">Logout</a>
             </nav>
         </aside>
+        
     );
 };
 
