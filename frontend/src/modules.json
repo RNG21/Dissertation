@@ -1,0 +1,43 @@
+[
+    {
+      "title": "Custom Commands",
+      "description": "Create complex slash commands to personalize your bot",
+      "icon": "✏️"
+    },
+    {
+      "title": "Custom Events",
+      "description": "Create complex events to personalize your bot",
+      "icon": "📅"
+    },
+    {
+      "title": "Timed Events",
+      "description": "Trigger custom events through schedules or intervals",
+      "icon": "⏰"
+    },
+    {
+      "title": "Data Storage",
+      "description": "Create custom variables to store data for your bot",
+      "icon": "💾"
+    },
+    {
+      "title": "Webhooks",
+      "description": "Trigger custom events through webhooks",
+      "icon": "🌐"
+    },
+    {
+      "title": "IFTTT",
+      "description": "Connect your bot to thousands of other apps and services",
+      "icon": "🔌"
+    },
+    {
+      "title": "Polls Filter",
+      "description": "Easily block unwanted polls in your server channels!",
+      "icon": "🚫"
+    },
+    {
+      "title": "Moderation",
+      "description": "Moderate your server with a set of powerful commands!",
+      "icon": "🛡️"
+    }
+  ]
+  
