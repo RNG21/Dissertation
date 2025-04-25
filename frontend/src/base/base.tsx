@@ -39,12 +39,12 @@ function Base({ mainContent: MainContent }: BaseProps): ReactElement {
 
 
             {/* Overlay to block clicks when sidebar is open */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black bg-opacity-30 z-10"
-                    onClick={toggleSidebar}
-                />
-            )}
+            <div
+                className={`fixed inset-0 bg-black z-10 transition-opacity duration-600 ${
+                    sidebarOpen ? 'opacity-30' : 'opacity-0 pointer-events-none'
+                }`}
+                onClick={toggleSidebar}
+            />
 
             <div className="flex-1 flex flex-col dark:bg-zinc-800 z-0">
                 <Navbar toggleSidebar={toggleSidebar} />
