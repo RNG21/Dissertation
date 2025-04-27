@@ -8,7 +8,7 @@ interface ComponentProps {
 const Component = ({ comp, onDragStart }: ComponentProps) => {
     return (
         <div
-            className="p-2 mb-2 bg-white rounded shadow cursor-move"
+            className="hover:bg-[#3b3b47] transition-colors duration-200 p-2 rounded cursor-move"
             draggable
             onDragStart={onDragStart}
         >

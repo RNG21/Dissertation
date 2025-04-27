@@ -16,3 +16,10 @@ export interface DroppedComponent extends Component {
     y: number;
 };
 
+
+export interface ConnectingLine {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+}

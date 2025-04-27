@@ -55,7 +55,7 @@ const Base = ({ pageName, mainContent: MainContent, sidebarContent: SidebarConte
                 />
 
                 {/* Main page area */}
-                <div className="flex-1 flex flex-col bg-gray-100 dark:bg-zinc-800 z-10">
+                <div className="flex-1 bg-gray-100 dark:bg-zinc-800 z-10">
                     {MainContent}
                 </div>
             </div>
