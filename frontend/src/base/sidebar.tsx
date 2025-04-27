@@ -1,23 +1,23 @@
-import React from 'react';
+import { Module } from '../types';
 
 interface SidebarProps {
     sidebarOpen: boolean;
+    moduleList?: Module[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen }) => {
-    return (
+function Sidebar({ sidebarOpen, moduleList }: SidebarProps) {
+    return (        
         <aside className={`dark:bg-zinc-900 dark:text-white w-64 p-4 space-y-4 transition-transform duration-300 
             fixed top-0 left-0 h-full z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:relative`}>
-            <h2 className="text-2xl font-bold mb-4">My App</h2>
             <nav className="flex flex-col gap-2">
-                <a href="#" className="hover:bg-zinc-700 p-2 rounded">Dashboard</a>
-                <a href="#" className="hover:bg-zinc-700 p-2 rounded">Settings</a>
-                <a href="#" className="hover:bg-zinc-700 p-2 rounded">Profile</a>
-                <a href="#" className="hover:bg-zinc-700 p-2 rounded">Logout</a>
+                {moduleList?.map((module, index) => (
+                    <a key={index} href={module.url} className="hover:bg-[#3b3b47] transition-colors duration-200 p-2 rounded">
+                        {module.icon} {module.title}
+                    </a>
+                ))}
             </nav>
         </aside>
-        
     );
-};
+}
 
 export default Sidebar;

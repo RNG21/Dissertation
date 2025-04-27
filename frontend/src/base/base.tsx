@@ -2,12 +2,17 @@ import { ReactElement, ElementType, useState, useRef, useEffect } from 'react';
 
 import Navbar from './navbar';
 import Sidebar from './sidebar';
+import { Module } from '../types';
+
+import modules_ from "../modules.json";
+const modules: Module[] = modules_;
 
 interface BaseProps {
+    pageName: string;
     mainContent?: ElementType;
 }
 
-function Base({ mainContent: MainContent }: BaseProps): ReactElement {
+function Base({ pageName, mainContent: MainContent }: BaseProps): ReactElement {
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
     const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -32,26 +37,33 @@ function Base({ mainContent: MainContent }: BaseProps): ReactElement {
     }, [sidebarOpen]);
 
     return (
-        <div className="flex h-screen relative">
-            <div ref={sidebarRef} className="z-20">
-                <Sidebar sidebarOpen={sidebarOpen} />
-            </div>
+        <div className="min-h-screen flex flex-col bg-[#1e1e26]">
+            <Navbar pageName={pageName} toggleSidebar={toggleSidebar} />
 
+            <div className="flex flex-1 relative">
+                {/* Sidebar */}
+                <div ref={sidebarRef} className="z-30">
+                    <Sidebar
+                        sidebarOpen={sidebarOpen}
+                        moduleList={modules}
+                    />
+                </div>
 
-            {/* Overlay to block clicks when sidebar is open */}
-            <div
-                className={`fixed inset-0 bg-black z-10 transition-opacity duration-600 ${
-                    sidebarOpen ? 'opacity-30' : 'opacity-0 pointer-events-none'
-                }`}
-                onClick={toggleSidebar}
-            />
+                {/* Dim background when sidebar open */}
+                <div
+                    className={`fixed inset-0 bg-black transition-opacity duration-500
+                        ${sidebarOpen ? 'opacity-50 z-20' : 'opacity-0 pointer-events-none'}`}
+                    onClick={toggleSidebar}
+                />
 
-            <div className="flex-1 flex flex-col dark:bg-zinc-800 z-0">
-                <Navbar toggleSidebar={toggleSidebar} />
-                {MainContent && <MainContent />}
+                {/* Main page area */}
+                <div className="flex-1 flex flex-col bg-gray-100 dark:bg-zinc-800 z-10">
+                    {MainContent && <MainContent />}
+                </div>
             </div>
         </div>
     );
 }
+
 
 export default Base;
