@@ -99,7 +99,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
         const { x: endX, y: endY } = getCanvasCoords(e);
         const targetComp = droppedComponents.find(c => c.id === targetId);
-        if (!targetComp) {
+        if (!targetComp || lines.find(line => line.targetId === targetId)) {
             // released somewhere else – cancel connection
             setTempLine(null);
             return;
