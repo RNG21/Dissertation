@@ -3,7 +3,7 @@ interface NavbarProps {
     toggleSidebar: () => void;
 }
 
-function Navbar({ pageName, toggleSidebar }: NavbarProps) {
+const Navbar = ({ pageName, toggleSidebar }: NavbarProps) => {
     return (
         <header className="bg-white dark:bg-[#1e1e26] px-4 py-3 flex items-center justify-between md:justify-end md:pl-6">
             <button

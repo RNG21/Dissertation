@@ -12,7 +12,7 @@ interface BaseProps {
     mainContent?: ElementType;
 }
 
-function Base({ pageName, mainContent: MainContent }: BaseProps): ReactElement {
+const Base = ({ pageName, mainContent: MainContent }: BaseProps): ReactElement => {
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
     const sidebarRef = useRef<HTMLDivElement>(null);
 

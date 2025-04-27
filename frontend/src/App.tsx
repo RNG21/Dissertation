@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './home';
-import CommandBuilder from './builder/builder';
+import CommandBuilder from './builder/DragDrop';
 
 function App() {
     return (
