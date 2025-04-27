@@ -45,7 +45,11 @@ const Base = ({ pageName, mainContent: MainContent }: BaseProps): ReactElement =
                 <div ref={sidebarRef} className="z-30">
                     <Sidebar
                         sidebarOpen={sidebarOpen}
-                        moduleList={modules}
+                        content={modules?.map((module, index) => (
+                            <a key={index} href={module.url} className="hover:bg-[#3b3b47] transition-colors duration-200 p-2 rounded">
+                                {module.icon} {module.title}
+                            </a>
+                        ))}
                     />
                 </div>
 
