@@ -1,18 +1,16 @@
-import { ReactElement, ElementType, useState, useRef, useEffect } from 'react';
+import { ReactElement, useState, useRef, useEffect, ReactNode } from 'react';
 
 import Navbar from './navbar';
 import Sidebar from './sidebar';
-import { Module } from '../types';
 
-import modules_ from "../modules.json";
-const modules: Module[] = modules_;
 
 interface BaseProps {
     pageName: string;
-    mainContent?: ElementType;
+    mainContent: ReactNode;
+    sidebarContent: ReactNode;
 }
 
-const Base = ({ pageName, mainContent: MainContent }: BaseProps): ReactElement => {
+const Base = ({ pageName, mainContent: MainContent, sidebarContent: SidebarContent }: BaseProps): ReactElement => {
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
     const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +43,7 @@ const Base = ({ pageName, mainContent: MainContent }: BaseProps): ReactElement =
                 <div ref={sidebarRef} className="z-30">
                     <Sidebar
                         sidebarOpen={sidebarOpen}
-                        moduleList={modules}
+                        content={SidebarContent}
                     />
                 </div>
 
@@ -58,7 +56,7 @@ const Base = ({ pageName, mainContent: MainContent }: BaseProps): ReactElement =
 
                 {/* Main page area */}
                 <div className="flex-1 flex flex-col bg-gray-100 dark:bg-zinc-800 z-10">
-                    {MainContent && <MainContent />}
+                    {MainContent}
                 </div>
             </div>
         </div>
