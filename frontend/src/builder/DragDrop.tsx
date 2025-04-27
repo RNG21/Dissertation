@@ -131,9 +131,11 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
         }
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: React.MouseEvent) => {
         if (draggingId !== null) {
             endDragging();
+        } else if (tempLine !== null) {
+            endConnecting(e, "");
         }
     };
 
@@ -145,6 +147,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
     const handleDrop = (e: React.DragEvent) => {
         const componentData = e.dataTransfer.getData('component');
+        if (!componentData) return;
         const component = JSON.parse(componentData);
         // place component at mouse position within canvas
         const rect = (e.target as HTMLDivElement).getBoundingClientRect();
@@ -188,10 +191,11 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
         <div
             ref={canvasRef}
             className="flex-1 min-h-screen p-4 rounded relative overflow-hidden"
+            style={{ userSelect: 'none' }}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
+            onMouseUp={e=>handleMouseUp(e)}
         >
             <h2 className="dark:text-white text-lg font-bold mb-4">Canvas</h2>
 
