@@ -6,9 +6,10 @@ interface DroppedComponentProps {
     isSelected: boolean;  // True if this node is selected (to show blue outline)
     selectComponent: () => void;  // Called when user clicks anywhere on the node
     startDragging: () => void;  // Start dragging the whole block
-    startConnecting: (e: React.MouseEvent) => void;  // User begins a connection from an output port
-    endConnecting: (e: React.MouseEvent) => void;  // User releases mouse over an input port
+    startConnecting: (e: React.MouseEvent, port: string) => void;  // User begins a connection from an output port
+    endConnecting: (e: React.MouseEvent, port: string) => void;  // User releases mouse over an input port
     openDetails: () => void;  // Open up details when double clicked
+    
 }
 
 const PORT_SIZE = 10;          // diameter in px of the yellow socket
@@ -33,7 +34,7 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
     startConnecting,
     endConnecting,
     openDetails
-    }) => {
+}) => {
     const inputs = comp.inputs ?? [];
     const outputs = comp.outputs ?? [];
     const rows = Math.max(inputs.length, outputs.length, 1);
@@ -41,11 +42,11 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
     /**
      * Utility render helpers ---------------------------------------------------
      */
-    const renderInput = (name: string, idx: number) => (
+    const renderInput = (name: string, index: number) => (
         <div
         key={`in-${name}`}
         className="absolute left-[-16px] flex items-center text-xs text-white"
-        style={{ top: idx * ROW_HEIGHT + 4 }}
+        style={{ top: index * ROW_HEIGHT + 4 }}
         >
         {/* socket */}
         <div
@@ -53,7 +54,7 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
             style={{ width: PORT_SIZE, height: PORT_SIZE, background: PORT_COLOR }}
             onMouseUp={(e) => {
             e.stopPropagation();
-            endConnecting(e);
+            endConnecting(e, name);
             }}
             onMouseDown={(e) => e.stopPropagation()}
         />
@@ -61,11 +62,11 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
         </div>
     );
 
-    const renderOutput = (name: string, idx: number) => (
+    const renderOutput = (name: string, index: number) => (
         <div
         key={`out-${name}`}
         className="absolute right-[-16px] flex items-center text-xs text-white"
-        style={{ top: idx * ROW_HEIGHT + 4 }}
+        style={{ top: index * ROW_HEIGHT + 4 }}
         >
         <span className="mr-2 select-none pointer-events-none">{name}</span>
         <div
@@ -73,7 +74,7 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
             style={{ width: PORT_SIZE, height: PORT_SIZE, background: PORT_COLOR }}
             onMouseDown={(e) => {
             e.stopPropagation();
-            startConnecting(e);
+            startConnecting(e, name);
             }}
         />
         </div>
@@ -92,20 +93,20 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
             openDetails();
         }}
         >
-        {/* HEADER */}
-        <div className="rounded-t px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r from-emerald-700 to-emerald-600">
-            {comp.label}
-        </div>
+            {/* HEADER */}
+            <div className="rounded-t px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r from-emerald-700 to-emerald-600">
+                {comp.label}
+            </div>
 
-        {/* BODY (black background) */}
-        <div
-            className="relative px-4 py-2 bg-[#1e1e1e] rounded-b"
-            style={{ minWidth: 160, height: rows * ROW_HEIGHT + 4 }}
-        >
-            {/* Draw all ports via absolute positioning */}
-            {inputs.map((p, idx) => renderInput(p.name, idx))}
-            {outputs.map((p, idx) => renderOutput(p.name, idx))}
-        </div>
+            {/* BODY (black background) */}
+            <div
+                className="relative px-4 py-2 bg-[#1e1e1e] rounded-b"
+                style={{ minWidth: 160, height: rows * ROW_HEIGHT + 4 }}
+            >
+                {/* Draw all ports via absolute positioning */}
+                {inputs.map((p, index) => renderInput(p.name, index))}
+                {outputs.map((p, index) => renderOutput(p.name, index))}
+            </div>
         </div>
     );
 };

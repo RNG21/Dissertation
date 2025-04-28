@@ -22,7 +22,9 @@ interface DragDropAreaProps {
 interface StickyLine {
   id: string;
   sourceId: string;
+  sourcePort: string;
   targetId: string;
+  targetPort: string;
   sourceOffsetX: number;
   sourceOffsetY: number;
   targetOffsetX: number;
@@ -32,6 +34,7 @@ interface StickyLine {
 /** A line that is being drawn right now (mouse is still held down). */
 interface TempLine {
   sourceId: string;
+  sourcePort: string;
   sourceOffsetX: number;
   sourceOffsetY: number;
   endX: number;
@@ -106,7 +109,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
   /* --------------------  Connecting helpers -------------------- */
 
-  const startConnecting = (e: React.MouseEvent, compId: string) => {
+  const startConnecting = (e: React.MouseEvent, compId: string, port: string) => {
     e.stopPropagation();
     if (draggingId) return;
 
@@ -116,6 +119,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
     setTempLine({
       sourceId: compId,
+      sourcePort: port,
       sourceOffsetX: startX - source.x,
       sourceOffsetY: startY - source.y,
       endX: startX,
@@ -129,7 +133,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
     setTempLine({ ...tempLine, endX, endY });
   };
 
-  const endConnecting = (e: React.MouseEvent, targetId: string) => {
+  const endConnecting = (e: React.MouseEvent, targetId: string, port: string) => {
     if (!tempLine) return;
     e.stopPropagation();
 
@@ -145,7 +149,9 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
       {
         id: `line-${prev.length}`,
         sourceId: tempLine.sourceId,
+        sourcePort: tempLine.sourcePort,
         targetId: targetId,
+        targetPort: port,
         sourceOffsetX: tempLine.sourceOffsetX,
         sourceOffsetY: tempLine.sourceOffsetY,
         targetOffsetX: endX - target.x,
@@ -165,7 +171,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
   const handleMouseUp = (e: React.MouseEvent) => {
     if (draggingId) endDragging();
-    else if (tempLine) endConnecting(e, "non-connection");
+    else if (tempLine) endConnecting(e, "non-connection", "");
   };
 
   /* --------------------  Drag & Drop for component palette -------------------- */
@@ -240,8 +246,8 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
           isSelected={selectedId === comp.id}
           selectComponent={() => selectComponent(comp.id)}
           startDragging={() => startDragging(comp.id)}
-          startConnecting={e => startConnecting(e, comp.id)}
-          endConnecting={e => endConnecting(e, comp.id)}
+          startConnecting={(e, p) => startConnecting(e, comp.id, p)}
+          endConnecting={(e, p) => endConnecting(e, comp.id, p)}
           openDetails={() => setDetailsId(comp.id)}
         />
       ))}

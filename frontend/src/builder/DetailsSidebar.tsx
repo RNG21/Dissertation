@@ -15,11 +15,6 @@ const DetailsSidebar: React.FC<DetailsSidebarProps> = ({
   onClose,
 }) => {
   const getArgSource = (argName: string) => {
-    console.log(comp,
-      meta,
-      edges,
-      argName
-    );
 
     const edge = edges.find(
       e => e.targetId === comp.id && e.targetPort === argName
@@ -43,7 +38,7 @@ const DetailsSidebar: React.FC<DetailsSidebarProps> = ({
 
       <header className="px-6 py-4 border-b border-zinc-700">
         <h2 className="font-semibold text-lg">{meta.label}</h2>
-        <p className="text-sm text-zinc-400">{meta.code_id}</p>
+        <p className="text-sm text-zinc-400">{comp.id}</p>
       </header>
 
       <section className="p-6 space-y-4">
