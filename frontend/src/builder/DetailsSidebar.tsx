@@ -12,6 +12,8 @@ interface DetailsSidebarProps {
 
 
 const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onClose, updateField }) => {
+  const isSlash = comp.code_id === "__slash__";
+
   /**
    * Returns a human‑readable description of what feeds *argName*:
    *   • "⇐ component‑7.result" when connected.
@@ -45,7 +47,7 @@ const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onCl
         onClick={onClose}
         className="absolute right-4 top-3 text-2xl leading-none"
       >
-        ×
+        x
       </button>
 
       <header className="px-6 py-4 border-b border-zinc-700">
@@ -58,39 +60,114 @@ const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onCl
           <p className="text-sm text-zinc-300 whitespace-pre-line">{meta.doc}</p>
         )}
 
-        <h3 className="font-medium">Arguments</h3>
-        <ul className="space-y-2">
-          {meta.inputs.map(inp => {
-            const src = getArgSource(inp.name);
-            return (
-              <li key={inp.name}>
-                <p>
-                  <span className="font-mono">{inp.name}</span>{" "}
-                  <span className="text-xs text-zinc-400">({inp.type})</span>
-                </p>
-                {inp.desc && <p className="text-xs text-zinc-400">{inp.desc}</p>}
-                {src ? (
-                  <p className="text-green-400 text-xs">{src}</p>
-                ) : (
-                  <input
-                    type="text"
-                    className="mt-1 w-full rounded bg-zinc-700 text-xs px-2 py-1 placeholder-zinc-500 focus:outline-none"
-                    placeholder={String(getDefault(inp.name))}
-                    value={comp[inp.name] ?? ""}
-                    onChange={(e) => updateField(inp.name, e.target.value)}
-                  />
-                )}
-              </li>
-            );
-          })}
-        </ul>
-        {/* ----------------  Return value  ---------------- */}
-        {meta.outputs?.[0] && meta.outputs[0].desc && (
+        {/* ---------- special UI for the slash-command startpoint ---------- */}
+        {isSlash ? (
           <>
-            <h3 className="font-medium pt-4">Output</h3>
-            <p className="text-xs text-zinc-300 whitespace-pre-line">
-              {`(${meta.outputs[0].type}) ${meta.outputs[0].desc}`}
-            </p>
+            <h3 className="font-medium">Slash Command</h3>
+
+            {/* command & description */}
+            <label className="block text-sm mt-2">Command name (without “/”)</label>
+            <input
+              className="w-full bg-zinc-700 px-2 py-1 mt-1"
+              value={(comp as any).command}
+              onChange={e => updateField("command", e.target.value)}
+            />
+
+            <label className="block text-sm mt-4">Description</label>
+            <input
+              className="w-full bg-zinc-700 px-2 py-1 mt-1"
+              value={(comp as any).description}
+              onChange={e => updateField("description", e.target.value)}
+            />
+
+            {/* option list */}
+            <h3 className="font-medium mt-6">Options</h3>
+            {(comp as any).options?.map((opt: any, i: number) => (
+              <div key={i} className="flex gap-2 items-center mt-2">
+                <input
+                  className="flex-1 bg-zinc-700 px-2 py-1"
+                  placeholder="name"
+                  value={opt.name}
+                  onChange={e => {
+                    const copy = [...(comp as any).options];
+                    copy[i] = { ...opt, name: e.target.value };
+                    updateField("options", copy);
+                  }}
+                />
+                <select
+                  className="bg-zinc-700 px-1 py-1"
+                  value={opt.type}
+                  onChange={e => {
+                    const copy = [...(comp as any).options];
+                    copy[i] = { ...opt, type: e.target.value };
+                    updateField("options", copy);
+                  }}
+                >
+                  <option value="string">string</option>
+                  <option value="integer">integer</option>
+                  <option value="boolean">boolean</option>
+                </select>
+                <button
+                  className="text-red-400"
+                  onClick={() => {
+                    const copy = (comp as any).options.filter((_: any, j: number) => j !== i);
+                    updateField("options", copy);
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+
+            <button
+              className="mt-3 text-emerald-400 text-sm"
+              onClick={() =>
+                updateField("options", [...((comp as any).options ?? []), { name: "", type: "string" }])
+              }
+            >
+              + Add option
+            </button>
+          </>
+        ) : (
+          /* ---------- generic UI ---------- */
+          <>
+            <h3 className="font-medium">Arguments</h3>
+            <ul className="space-y-2">
+              {meta.inputs.map(inp => {
+                const src = getArgSource(inp.name);
+                return (
+                  <li key={inp.name}>
+                    <p>
+                      <span className="font-mono">{inp.name}</span>{" "}
+                      <span className="text-xs text-zinc-400">({inp.type})</span>
+                    </p>
+                    {inp.desc && <p className="text-xs text-zinc-400">{inp.desc}</p>}
+                    {src ? (
+                      <p className="text-green-400 text-xs">{src}</p>
+                    ) : (
+                      <input
+                        type="text"
+                        className="mt-1 w-full rounded bg-zinc-700 text-xs px-2 py-1 placeholder-zinc-500 focus:outline-none"
+                        placeholder={String(getDefault(inp.name))}
+                        // @ts-ignore  – runtime constants live on the node
+                        value={comp[inp.name] ?? ""}
+                        onChange={e => updateField(inp.name, e.target.value)}
+                      />
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* output description */}
+            {meta.outputs?.[0] && meta.outputs[0].desc && (
+              <>
+                <h3 className="font-medium pt-4">Output</h3>
+                <p className="text-xs text-zinc-300 whitespace-pre-line">
+                  {`(${meta.outputs[0].type}) ${meta.outputs[0].desc}`}
+                </p>
+              </>
+            )}
           </>
         )}
       </section>

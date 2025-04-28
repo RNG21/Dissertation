@@ -6,17 +6,6 @@ from discord import Message, TextChannel
 from blocks import block
 from discord import Interaction
 
-@block("Slash Command")
-def start_command(command_name: str) -> Interaction:
-    """Entry point for a Discord slash-command flow.
-
-    :param command_name: the name of the slash command (no leading '/')
-    :return: the incoming Interaction object
-    """
-    # (runner will stub this out; real handler is in the bot)
-    return None
-
-
 @block("Random Number")
 def random_int(low: int = 1, high: int = 10) -> int:
     """Generates a random number

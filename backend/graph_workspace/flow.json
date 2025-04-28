@@ -1,0 +1,84 @@
+{
+  "nodes": [
+    {
+      "code_id": "random_int",
+      "label": "Random Number",
+      "doc": "Generates a random number",
+      "inputs": [
+        {
+          "name": "low",
+          "type": "number",
+          "desc": "minimum number (inclusive)",
+          "default": 1
+        },
+        {
+          "name": "high",
+          "type": "number",
+          "desc": "maximum number (inclusive)",
+          "default": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "number",
+          "desc": "A random number between the range provided"
+        }
+      ],
+      "id": "component-0",
+      "x": 293,
+      "y": 423
+    },
+    {
+      "code_id": "start_command",
+      "label": "Slash Command",
+      "doc": "Entry point for a Discord slash-command flow.",
+      "inputs": [
+        {
+          "name": "command_name",
+          "type": "string",
+          "desc": "the name of the slash command (no leading '/')"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "Interaction",
+          "desc": "the incoming Interaction object"
+        }
+      ],
+      "id": "component-1",
+      "x": 260,
+      "y": 234,
+      "command_name": "a"
+    },
+    {
+      "code_id": "send",
+      "label": "Send Message",
+      "doc": "Sends a message to a channel",
+      "inputs": [
+        {
+          "name": "channel_id",
+          "type": "number | TextChannel",
+          "desc": "ID of channel to send the message to"
+        },
+        {
+          "name": "text",
+          "type": "string | Message",
+          "desc": "The message to send"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "void",
+          "desc": ""
+        }
+      ],
+      "id": "component-2",
+      "x": 434,
+      "y": 601
+    }
+  ],
+  "edges": []
+}

@@ -42,4 +42,19 @@ export interface ConnectingLine {
     targetId?: string;
     targetPort?: string;
 }
+
+export interface SlashOption {
+    name: string;       // alpha-numeric, max 32 chars (Discord rule)
+    type: 'string' | 'integer' | 'boolean';   // keep it simple for now
+    desc?: string;
+  }
+  
+export interface SlashCommandNode extends DroppedComponent {
+    code_id: '__slash__';          // magic discriminator
+    command: string;               // “/hello”
+    description: string;
+    options: SlashOption[];
+}
+
+
   

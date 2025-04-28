@@ -34,12 +34,10 @@ async def run_graph(graph_json: str, module_name: str, **extra_ctx) -> Dict[Port
             pname = port["name"]
             key = (node_id, pname)
 
-            # ---- 1️⃣ constant? ------------------------------------------
             if key in cache:
                 kwargs[pname] = cache[key]
                 continue
 
-            # ---- 2️⃣ edge? ----------------------------------------------
             edge = next(
                 (e for e in edges
                 if e["targetComponentId"] == node_id

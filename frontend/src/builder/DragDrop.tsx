@@ -41,8 +41,18 @@ interface TempLine {
   endY: number;
 }
 
-// 🗂️  The palette – imported statically so the bundler includes it in the build
-const palette: Component_[] = componentsList as unknown as Component_[];
+const palette: Component_[] = [
+  {
+    code_id: '__slash__',
+    label: 'Slash Command',
+    doc: 'Discord slash command entry-point',
+    inputs: [],                   // none
+    outputs: [
+      { name: 'ctx',   type: 'Interaction', desc: 'discord.py interaction' }
+    ]
+  },
+  ...componentsList as unknown as Component_[]
+];
 
 const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
   /* ---------- canvas state ---------- */
@@ -194,11 +204,44 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
     const raw = e.dataTransfer.getData("component");
     if (!raw) return;
     const component: Component_ = JSON.parse(raw);
+  
+    /* ---- start-node special case -------------------------------- */
+    if (
+      component.code_id === "__slash__" &&
+      droppedComponents.some(c => c.code_id === "__slash__")
+    ) {
+      alert("Only one slash-command startpoint is allowed.");
+      return;
+    }
+  
+    if (component.code_id === "__slash__") {
+      const rect = (e.target as HTMLDivElement).getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setDroppedComponents(prev => [
+        ...prev,
+        {
+          ...component,
+          id: `component-${prev.length}`,
+          x, y,
+          command: "hello",
+          description: "Says hello",
+          options: []
+        }
+      ]);
+      return;                    // ⬅️ stop – we handled it
+    }
+    /* ---- normal components fall through ------------------------- */
+  
     const rect = (e.target as HTMLDivElement).getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    setDroppedComponents(prev => [...prev, { ...component, id: `component-${prev.length}`, x, y }]);
+    setDroppedComponents(prev => [
+      ...prev,
+      { ...component, id: `component-${prev.length}`, x, y }
+    ]);
   };
+  
 
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
 
@@ -249,6 +292,25 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
     >
       <h2 className="dark:text-white text-lg font-bold mb-4">Canvas</h2>
 
+      <button
+        className="ml-4 px-2 py-1 bg-blue-600 text-white rounded"
+        onClick={() => {
+          const flow = {
+            nodes: droppedComponents,
+            edges: lines,
+          };
+          const blob = new Blob([JSON.stringify(flow, null, 2)], { type: "application/json" });
+          const url  = URL.createObjectURL(blob);
+          const a    = document.createElement("a");
+          a.href     = url;
+          a.download = "flow.json";
+          a.click();
+          URL.revokeObjectURL(url);
+        }}
+      >
+        Export JSON
+      </button>
+
       {droppedComponents.map(comp => (
         <DroppedComponent
           key={comp.id}
@@ -277,11 +339,19 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
       {detailsId && (() => {
         const node   = droppedComponents.find(c => c.id === detailsId)!;
-        const schema = componentsList.find(c => c.code_id === node.code_id)!;
+        const schema =
+          palette.find(c => c.code_id === node.code_id) || {
+            code_id: node.code_id,
+            label: node.label ?? node.code_id,
+            doc: "",
+            inputs: [],
+            outputs: [],
+          };
         return (
           <DetailsSidebar
             comp={node}
             meta={schema}
+            //@ts-ignore
             edges={lines}
             onClose={() => setDetailsId(null)}
             updateField={(field, value) => updateComponentField(node.id, field, value)}

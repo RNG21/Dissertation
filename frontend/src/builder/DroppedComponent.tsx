@@ -35,8 +35,12 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
     endConnecting,
     openDetails
 }) => {
-    const inputs = comp.inputs ?? [];
-    const outputs = (comp.outputs ?? []).filter(p => p.type !== "void" && p.type !== "null");
+    const isStart = comp.code_id === "__slash__";
+    const inputs  = isStart ? [] : (comp.inputs ?? []);
+    const outputs = isStart
+      ? [{ name: "ctx", type: "Interaction" },
+         ...((comp as any).options ?? []).map((o: any) => ({ name: o.name, type: o.type }))]
+      : (comp.outputs ?? []).filter(p => p.type !== "void" && p.type !== "null");
     const rows = Math.max(inputs.length, outputs.length, 1);
 
     /**
