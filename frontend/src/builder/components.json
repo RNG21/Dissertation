@@ -1,0 +1,52 @@
+[
+  {
+    "code_id": "random_int",
+    "label": "Random Number",
+    "doc": "Generates a random number",
+    "inputs": [
+      {
+        "name": "low",
+        "type": "number",
+        "desc": "minimum number (inclusive)",
+        "default": 1
+      },
+      {
+        "name": "high",
+        "type": "number",
+        "desc": "maximum number (inclusive)",
+        "default": 10
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output",
+        "type": "number",
+        "desc": "A random number between the range provided"
+      }
+    ]
+  },
+  {
+    "code_id": "send",
+    "label": "Send Message",
+    "doc": "Sends a message to a channel",
+    "inputs": [
+      {
+        "name": "channel_id",
+        "type": "any",
+        "desc": "ID of channel to send the message to"
+      },
+      {
+        "name": "text",
+        "type": "any",
+        "desc": "The message to send"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output",
+        "type": "void",
+        "desc": ""
+      }
+    ]
+  }
+]
