@@ -3,6 +3,19 @@ import random
 import globals
 import discord 
 from discord import Message, TextChannel
+from blocks import block
+from discord import Interaction
+
+@block("Slash Command")
+def start_command(command_name: str) -> Interaction:
+    """Entry point for a Discord slash-command flow.
+
+    :param command_name: the name of the slash command (no leading '/')
+    :return: the incoming Interaction object
+    """
+    # (runner will stub this out; real handler is in the bot)
+    return None
+
 
 @block("Random Number")
 def random_int(low: int = 1, high: int = 10) -> int:
@@ -28,3 +41,22 @@ async def send(channel_id: int | TextChannel, text: str | Message) -> None:
     else:
         raise Exception("Parameter \"channel_id\" must be either integer or a TextChannel object")
     await channel.send(text)
+
+@block("Edit Message")
+async def edit_message(message: Message, new_text: str) -> None:
+    """Edit an existing message
+
+    :param message: the Message object to edit
+    :param new_text: the new text content
+    """
+    await message.edit(content=new_text)
+
+@block("Lowercase String")
+def to_lower(text: str) -> str:
+    """Convert a string to lowercase
+
+    :param text: input string
+    :return: lowercased string
+    """
+    return text.lower()
+

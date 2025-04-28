@@ -3,13 +3,15 @@ import { Component as Comp, DroppedComponent, ConnectingLine } from "../types";
 
 interface DetailsSidebarProps {
   comp: DroppedComponent;
-  meta: Comp;                      // entry from componentsList
+  meta: Comp;
   edges: ConnectingLine[];
   onClose: () => void;
+  updateField: (field: string, value: any) => void;
 }
 
 
-const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onClose }) => {
+
+const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onClose, updateField }) => {
   /**
    * Returns a human‑readable description of what feeds *argName*:
    *   • "⇐ component‑7.result" when connected.
@@ -74,15 +76,23 @@ const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onCl
                     type="text"
                     className="mt-1 w-full rounded bg-zinc-700 text-xs px-2 py-1 placeholder-zinc-500 focus:outline-none"
                     placeholder={String(getDefault(inp.name))}
-                    // You will likely want an onChange handler here that persists
-                    // the literal on the node – left out intentionally until the
-                    // broader state‑management story is defined.
+                    value={comp[inp.name] ?? ""}
+                    onChange={(e) => updateField(inp.name, e.target.value)}
                   />
                 )}
               </li>
             );
           })}
         </ul>
+        {/* ----------------  Return value  ---------------- */}
+        {meta.outputs?.[0] && meta.outputs[0].desc && (
+          <>
+            <h3 className="font-medium pt-4">Output</h3>
+            <p className="text-xs text-zinc-300 whitespace-pre-line">
+              {`(${meta.outputs[0].type}) ${meta.outputs[0].desc}`}
+            </p>
+          </>
+        )}
       </section>
     </aside>
   );

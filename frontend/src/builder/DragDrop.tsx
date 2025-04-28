@@ -73,6 +73,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
     if (selectedId.startsWith("line-")) deleteLine();
     else if (selectedId.startsWith("component-")) deleteComponent();
     setSelectedId(null);
+    setDetailsId(null);
   };
 
   useEffect(() => {
@@ -92,6 +93,15 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
     const rect = canvasRef.current!.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
+
+  const updateComponentField = (id: string, fieldName: string, value: any) => {
+    setDroppedComponents(prev =>
+      prev.map(c =>
+        c.id === id ? { ...c, [fieldName]: value } : c
+      )
+    );
+  };
+  
 
   /* --------------------  Dragging helpers -------------------- */
 
@@ -274,6 +284,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
             meta={schema}
             edges={lines}
             onClose={() => setDetailsId(null)}
+            updateField={(field, value) => updateComponentField(node.id, field, value)}
           />
         );
       })()}

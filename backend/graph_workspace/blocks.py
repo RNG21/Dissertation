@@ -2,8 +2,8 @@ import inspect
 import json
 import pathlib
 import re
-from types import NoneType
-from typing import Any, Dict, List
+from types import NoneType, UnionType    
+from typing import Any, Dict, List, get_origin, get_args
 
 
 # ------------------------ Decorator -------------------------
@@ -22,23 +22,31 @@ def block(label: str | None = None):
 # ----------------- Python to TypeScript mapping ---------------
 
 def _py_type_to_ts(t: Any, *, is_return: bool = False) -> str:
-    """Translate a Python type object to the corresponding TypeScript type.
+    """Convert a Python annotation *t* into a TypeScript-ish string.
 
-    ``None`` becomes ``null`` (or ``void`` when in return position).
-    Primitive built-ins map to their obvious counterparts; everything else
-    falls back to ``any``.
+    • Primitive built-ins  →  ``number``/``string``/…
+    • ``None``             →  ``void`` (if return-pos) or ``null``
+    • Unions (``int | Foo`` or ``Union[int, Foo]``)
+      become  ``number | Foo``
+    • Any other class      →  its bare class-name
     """
 
+    # ---- 1.  handle Union[...] or “A | B” ---------------------------------
+    origin = get_origin(t)
+    if origin is UnionType or origin is list.__class__:  # Py≤3.9 uses typing.Union
+        parts = [_py_type_to_ts(arg, is_return=is_return) for arg in get_args(t)]
+        return " | ".join(parts)
+
+    # ---- 2.  None / primitives -------------------------------------------
     if t in (None, NoneType):
         return "void" if is_return else "null"
 
-    basic = {
-        int: "number",
-        float: "number",
-        str: "string",
-        bool: "boolean",
-    }
-    return basic.get(t, "any")
+    primitives = {int: "number", float: "number", str: "string", bool: "boolean"}
+    if t in primitives:
+        return primitives[t]
+
+    # ---- 3.  fallback → use the bare class / typing-alias name ------------
+    return getattr(t, "__name__", str(t))
 
 
 # ---------------  Docstring helpers -------------------------

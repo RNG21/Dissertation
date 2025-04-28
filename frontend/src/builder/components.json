@@ -1,5 +1,29 @@
 [
   {
+    "code_id": "edit_message",
+    "label": "Edit Message",
+    "doc": "Edit an existing message",
+    "inputs": [
+      {
+        "name": "message",
+        "type": "Message",
+        "desc": "the Message object to edit"
+      },
+      {
+        "name": "new_text",
+        "type": "string",
+        "desc": "the new text content"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output",
+        "type": "void",
+        "desc": ""
+      }
+    ]
+  },
+  {
     "code_id": "random_int",
     "label": "Random Number",
     "doc": "Generates a random number",
@@ -32,12 +56,12 @@
     "inputs": [
       {
         "name": "channel_id",
-        "type": "any",
+        "type": "number | TextChannel",
         "desc": "ID of channel to send the message to"
       },
       {
         "name": "text",
-        "type": "any",
+        "type": "string | Message",
         "desc": "The message to send"
       }
     ],
@@ -46,6 +70,25 @@
         "name": "output",
         "type": "void",
         "desc": ""
+      }
+    ]
+  },
+  {
+    "code_id": "to_lower",
+    "label": "Lowercase String",
+    "doc": "Convert a string to lowercase",
+    "inputs": [
+      {
+        "name": "text",
+        "type": "string",
+        "desc": "input string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output",
+        "type": "string",
+        "desc": "lowercased string"
       }
     ]
   }

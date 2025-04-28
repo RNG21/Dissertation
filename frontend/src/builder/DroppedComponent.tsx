@@ -36,7 +36,7 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
     openDetails
 }) => {
     const inputs = comp.inputs ?? [];
-    const outputs = comp.outputs ?? [];
+    const outputs = (comp.outputs ?? []).filter(p => p.type !== "void" && p.type !== "null");
     const rows = Math.max(inputs.length, outputs.length, 1);
 
     /**
