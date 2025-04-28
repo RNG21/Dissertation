@@ -7,18 +7,21 @@
       {
         "name": "low",
         "type": "number",
-        "desc": ""
+        "desc": "minimum number (inclusive)",
+        "default": 1
       },
       {
         "name": "high",
         "type": "number",
-        "desc": ""
+        "desc": "maximum number (inclusive)",
+        "default": 10
       }
     ],
     "outputs": [
       {
-        "name": "result",
-        "type": "number"
+        "name": "output",
+        "type": "number",
+        "desc": "A random number between the range provided"
       }
     ]
   },
@@ -29,19 +32,20 @@
     "inputs": [
       {
         "name": "channel_id",
-        "type": "number",
-        "desc": ""
+        "type": "any",
+        "desc": "ID of channel to send the message to"
       },
       {
         "name": "text",
         "type": "any",
-        "desc": ""
+        "desc": "The message to send"
       }
     ],
     "outputs": [
       {
-        "name": "result",
-        "type": "void"
+        "name": "output",
+        "type": "void",
+        "desc": ""
       }
     ]
   }

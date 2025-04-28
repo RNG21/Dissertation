@@ -8,23 +8,33 @@ interface DetailsSidebarProps {
   onClose: () => void;
 }
 
-const DetailsSidebar: React.FC<DetailsSidebarProps> = ({
-  comp,
-  meta,
-  edges,
-  onClose,
-}) => {
-  const getArgSource = (argName: string) => {
 
-    const edge = edges.find(
-      e => e.targetId === comp.id && e.targetPort === argName
-    );
+const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onClose }) => {
+  /**
+   * Returns a human‑readable description of what feeds *argName*:
+   *   • "⇐ component‑7.result" when connected.
+   *   • The constant stored directly on the node (e.g. "42").
+   *   • 𝙪𝙣𝙙𝙚𝙛𝙞𝙣𝙚𝙙 → means the socket is still free.
+   */
+  const getArgSource = (argName: string): string | undefined => {
+    const edge = edges.find(e => e.targetId === comp.id && e.targetPort === argName);
     if (edge) return `⇐ ${edge.sourceId}.${edge.sourcePort}`;
-    // look for constant the canvas stored on the node itself
-    // (adapt if you persist constants differently)
-    //@ts-ignore
+
+    // constant value stored on the node itself (if you support that)
+    // @ts‑ignore – we allow arbitrary extra props on DroppedComponent
+    // eslint‑disable‑next‑line  @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     if (comp[argName] !== undefined) return JSON.stringify(comp[argName]);
-    return "— unconnected —";
+
+    // not wired and no constant – leave undefined so the caller can render an <input>
+    return undefined;
+  };
+
+  /** Convenience helper: fetch possible default from the meta‑schema. */
+  const getDefault = (argName: string) => {
+    // meta.inputs may or may not include a `default` key – treat defensively
+    const entry: any | undefined = meta.inputs.find(i => i.name === argName);
+    return entry?.default ?? "";
   };
 
   return (
@@ -48,18 +58,30 @@ const DetailsSidebar: React.FC<DetailsSidebarProps> = ({
 
         <h3 className="font-medium">Arguments</h3>
         <ul className="space-y-2">
-          {meta.inputs.map(inp => (
-            <li key={inp.name}>
-              <p>
-                <span className="font-mono">{inp.name}</span>{" "}
-                <span className="text-xs text-zinc-400">({inp.type})</span>
-              </p>
-              {inp.desc && (
-                <p className="text-xs text-zinc-400">{inp.desc}</p>
-              )}
-              <p className="text-green-400 text-xs">{getArgSource(inp.name)}</p>
-            </li>
-          ))}
+          {meta.inputs.map(inp => {
+            const src = getArgSource(inp.name);
+            return (
+              <li key={inp.name}>
+                <p>
+                  <span className="font-mono">{inp.name}</span>{" "}
+                  <span className="text-xs text-zinc-400">({inp.type})</span>
+                </p>
+                {inp.desc && <p className="text-xs text-zinc-400">{inp.desc}</p>}
+                {src ? (
+                  <p className="text-green-400 text-xs">{src}</p>
+                ) : (
+                  <input
+                    type="text"
+                    className="mt-1 w-full rounded bg-zinc-700 text-xs px-2 py-1 placeholder-zinc-500 focus:outline-none"
+                    placeholder={String(getDefault(inp.name))}
+                    // You will likely want an onChange handler here that persists
+                    // the literal on the node – left out intentionally until the
+                    // broader state‑management story is defined.
+                  />
+                )}
+              </li>
+            );
+          })}
         </ul>
       </section>
     </aside>
