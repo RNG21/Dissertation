@@ -134,7 +134,6 @@ const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onCl
             <h3 className="font-medium">Arguments</h3>
             <ul className="space-y-2">
               {meta.inputs.map(inp => {
-                const src = getArgSource(inp.name);
                 return (
                   <li key={inp.name}>
                     <p>
@@ -142,14 +141,16 @@ const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onCl
                       <span className="text-xs text-zinc-400">({inp.type})</span>
                     </p>
                     {inp.desc && <p className="text-xs text-zinc-400">{inp.desc}</p>}
-                    {src ? (
-                      <p className="text-green-400 text-xs">{src}</p>
+                    {edges.some(e => e.targetId === comp.id && e.targetPort === inp.name) ? (
+                      <p className="text-green-400 text-xs">
+                        ⇐ {edges.find(e => e.targetId === comp.id && e.targetPort === inp.name)!.sourceId}.{edges.find(e => e.targetId === comp.id && e.targetPort === inp.name)!.sourcePort}
+                      </p>
                     ) : (
                       <input
                         type="text"
                         className="mt-1 w-full rounded bg-zinc-700 text-xs px-2 py-1 placeholder-zinc-500 focus:outline-none"
                         placeholder={String(getDefault(inp.name))}
-                        // @ts-ignore  – runtime constants live on the node
+                        //@ts-ignore
                         value={comp[inp.name] ?? ""}
                         onChange={e => updateField(inp.name, e.target.value)}
                       />
