@@ -2,14 +2,17 @@
   {
     "code_id": "random_int",
     "label": "Random Number",
+    "doc": "Generates a random number",
     "inputs": [
       {
         "name": "low",
-        "type": "number"
+        "type": "number",
+        "desc": ""
       },
       {
         "name": "high",
-        "type": "number"
+        "type": "number",
+        "desc": ""
       }
     ],
     "outputs": [
@@ -22,18 +25,17 @@
   {
     "code_id": "send",
     "label": "Send Message",
+    "doc": "Sends a message to a channel",
     "inputs": [
       {
         "name": "channel_id",
-        "type": "number"
+        "type": "number",
+        "desc": ""
       },
       {
         "name": "text",
-        "type": "string"
-      },
-      {
-        "name": "bot",
-        "type": "any"
+        "type": "any",
+        "desc": ""
       }
     ],
     "outputs": [

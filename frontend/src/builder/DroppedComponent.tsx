@@ -8,6 +8,7 @@ interface DroppedComponentProps {
     startDragging: () => void;  // Start dragging the whole block
     startConnecting: (e: React.MouseEvent) => void;  // User begins a connection from an output port
     endConnecting: (e: React.MouseEvent) => void;  // User releases mouse over an input port
+    openDetails: () => void;  // Open up details when double clicked
 }
 
 const PORT_SIZE = 10;          // diameter in px of the yellow socket
@@ -31,6 +32,7 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
     startDragging,
     startConnecting,
     endConnecting,
+    openDetails
     }) => {
     const inputs = comp.inputs ?? [];
     const outputs = comp.outputs ?? [];
@@ -87,6 +89,7 @@ const DroppedComponent: React.FC<DroppedComponentProps> = ({
         onClick={(e) => {
             e.stopPropagation();
             selectComponent();
+            openDetails();
         }}
         >
         {/* HEADER */}

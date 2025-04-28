@@ -8,7 +8,9 @@ import componentsList from "./components.json" with { type: "json" };
 import Component from "./Component";
 import DroppedComponent from "./DroppedComponent";
 import CurvedLine from "./CurvedLine";
+import DetailsSidebar from "./DetailsSidebar";
 import Base from "../base/base";
+
 
 interface DragDropAreaProps {
   pageName: string;
@@ -41,14 +43,16 @@ const palette: Component_[] = componentsList as unknown as Component_[];
 
 const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
   /* ---------- canvas state ---------- */
-  const [droppedComponents, setDroppedComponents] =
-    useState<DroppedComponent_[]>([]);
+  const [droppedComponents, setDroppedComponents] = useState<DroppedComponent_[]>([]);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [tempLine, setTempLine] = useState<TempLine | null>(null);
   const [lines, setLines] = useState<StickyLine[]>([]);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  const [detailsId, setDetailsId] = useState<string | null>(null);
+
 
   /* ---------- selection / deletion helpers ---------- */
 
@@ -141,7 +145,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
       {
         id: `line-${prev.length}`,
         sourceId: tempLine.sourceId,
-        targetId,
+        targetId: targetId,
         sourceOffsetX: tempLine.sourceOffsetX,
         sourceOffsetY: tempLine.sourceOffsetY,
         targetOffsetX: endX - target.x,
@@ -238,6 +242,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
           startDragging={() => startDragging(comp.id)}
           startConnecting={e => startConnecting(e, comp.id)}
           endConnecting={e => endConnecting(e, comp.id)}
+          openDetails={() => setDetailsId(comp.id)}
         />
       ))}
 
@@ -253,6 +258,19 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
           }}
         />
       )}
+
+      {detailsId && (() => {
+        const node   = droppedComponents.find(c => c.id === detailsId)!;
+        const schema = componentsList.find(c => c.code_id === node.code_id)!;
+        return (
+          <DetailsSidebar
+            comp={node}
+            meta={schema}
+            edges={lines}
+            onClose={() => setDetailsId(null)}
+          />
+        );
+      })()}
     </div>
   );
 
