@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 import { DroppedComponent as DroppedComponent_ } from '../types';
 import componentsList from '../components.json';
@@ -35,10 +35,39 @@ interface TempLine {
 const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
     const [droppedComponents, setDroppedComponents] = useState<DroppedComponent_[]>([]);
     const [draggingId, setDraggingId] = useState<string | null>(null);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
 
     const [tempLine, setTempLine] = useState<TempLine | null>(null);
     const [lines, setLines] = useState<StickyLine[]>([]);
     const canvasRef = useRef<HTMLDivElement>(null);
+
+    /* ---------- selection / deletion helpers ---------- */
+
+    const selectComponent = (id: string | null) => setSelectedId(id);
+
+    const deleteSelected = () => {
+        if (selectedId === null) return;
+        setDroppedComponents(prev =>
+            prev.filter(comp => comp.id !== selectedId),
+        );
+        // remove any connections involving that component
+        setLines(prev =>
+            prev.filter(l => l.sourceId !== selectedId && l.targetId !== selectedId),
+        );
+        setSelectedId(null);
+    };
+
+    // hit Delete or Backspace to remove the selection
+    useEffect(() => {
+        const handleKey = (e: KeyboardEvent) => {
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId !== null) {
+                e.preventDefault();
+                deleteSelected();
+            }
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+    }, [selectedId]); 
 
     /* --------------------  Helpers -------------------- */
 
@@ -178,15 +207,13 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
     /* --------------------  Sidebar / Canvas layout -------------------- */
 
-    const sidebarContent = (
-        <>
-            <h2 className="text-lg font-bold mb-4">Components</h2>
-            {componentsList.map(comp => (
-                <Component key={comp.code_id} comp={comp} onDragStart={e => handleDragStart(e, comp)} />
-            ))}
-        </>
-    );
-
+    const sidebarContent = (<>
+        <h2 className="text-lg font-bold mb-4">Components</h2>
+        {componentsList.map(comp => (
+            <Component key={comp.code_id} comp={comp} onDragStart={e => handleDragStart(e, comp)} />
+        ))}
+    </>);
+    
     const mainContent = (
         <div
             ref={canvasRef}
@@ -195,7 +222,8 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onMouseMove={handleMouseMove}
-            onMouseUp={e=>handleMouseUp(e)}
+            onMouseUp={e => handleMouseUp(e)}
+            onMouseDown={() => selectComponent(null)}
         >
             <h2 className="dark:text-white text-lg font-bold mb-4">Canvas</h2>
 
@@ -204,13 +232,14 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
                 <DroppedComponent
                     key={comp.id}
                     comp={comp}
+                    isSelected={selectedId === comp.id}
+                    selectComponent={() => selectComponent(comp.id)}
                     startDragging={() => startDragging(comp.id)}
                     startConnecting={e => startConnecting(e, comp.id)}
                     endConnecting={e => endConnecting(e, comp.id)}
                 />
             ))}
 
-            {/* Render permanent connections */}
             {renderStickyLines()}
 
             {/* Render the temporary line while connecting */}
