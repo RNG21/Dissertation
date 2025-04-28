@@ -1,43 +1,108 @@
+import React from "react";
 import { DroppedComponent as DroppedComponent_ } from "../types";
 
 interface DroppedComponentProps {
-    comp: DroppedComponent_;
-    isSelected: boolean;
-    selectComponent: () => void;
-    startDragging: () => void;
-    startConnecting: (e: React.MouseEvent) => void;
-    endConnecting: (e: React.MouseEvent) => void;
+    comp: DroppedComponent_;  // Runtime instance of a component on the canvas
+    isSelected: boolean;  // True if this node is selected (to show blue outline)
+    selectComponent: () => void;  // Called when user clicks anywhere on the node
+    startDragging: () => void;  // Start dragging the whole block
+    startConnecting: (e: React.MouseEvent) => void;  // User begins a connection from an output port
+    endConnecting: (e: React.MouseEvent) => void;  // User releases mouse over an input port
 }
 
-const DroppedComponent = ({
+const PORT_SIZE = 10;          // diameter in px of the yellow socket
+const PORT_COLOR = "#eab308";
+const ROW_HEIGHT = 22;         // vertical distance between successive ports
+
+/**
+ * Visual representation of a dropped node, styled roughly like an
+ * Unreal‑blueprint function node:
+ *  ┌────────────────────────────┐
+ *  │  Get Unit Direction […]    │ 
+ *  ├─────────────┬──────────────┤
+ *  │ ●  From     │  Return Val ●│
+ *  │ ●  To       │              │
+ *  └─────────────┴──────────────┘
+ */
+const DroppedComponent: React.FC<DroppedComponentProps> = ({
     comp,
     isSelected,
     selectComponent,
     startDragging,
     startConnecting,
     endConnecting,
-}: DroppedComponentProps) => {
+    }) => {
+    const inputs = comp.inputs ?? [];
+    const outputs = comp.outputs ?? [];
+    const rows = Math.max(inputs.length, outputs.length, 1);
+
+    /**
+     * Utility render helpers ---------------------------------------------------
+     */
+    const renderInput = (name: string, idx: number) => (
+        <div
+        key={`in-${name}`}
+        className="absolute left-[-16px] flex items-center text-xs text-white"
+        style={{ top: idx * ROW_HEIGHT + 4 }}
+        >
+        {/* socket */}
+        <div
+            className="rounded-full cursor-crosshair"
+            style={{ width: PORT_SIZE, height: PORT_SIZE, background: PORT_COLOR }}
+            onMouseUp={(e) => {
+            e.stopPropagation();
+            endConnecting(e);
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+        />
+        <span className="ml-2 select-none pointer-events-none">{name}</span>
+        </div>
+    );
+
+    const renderOutput = (name: string, idx: number) => (
+        <div
+        key={`out-${name}`}
+        className="absolute right-[-16px] flex items-center text-xs text-white"
+        style={{ top: idx * ROW_HEIGHT + 4 }}
+        >
+        <span className="mr-2 select-none pointer-events-none">{name}</span>
+        <div
+            className="rounded-full cursor-crosshair"
+            style={{ width: PORT_SIZE, height: PORT_SIZE, background: PORT_COLOR }}
+            onMouseDown={(e) => {
+            e.stopPropagation();
+            startConnecting(e);
+            }}
+        />
+        </div>
+    );
+
     return (
         <div
-            className={`bg-white absolute rounded shadow cursor-move transition z-2
-                        ${isSelected ? "ring-3 ring-blue-500" : ""}`}    /* blue outline when selected */
-            style={{ left: comp.x, top: comp.y, transform: "translate(-50%, -50%)" }}
-            onMouseDown={startDragging}
-            onClick={e => { e.stopPropagation(); selectComponent(); }}    /* select on click */
+        className={`absolute select-none rounded shadow cursor-move z-10 ${
+            isSelected ? "ring-2 ring-blue-500" : ""
+        }`}
+        style={{ left: comp.x, top: comp.y, transform: "translate(-50%, -50%)" }}
+        onMouseDown={startDragging}
+        onClick={(e) => {
+            e.stopPropagation();
+            selectComponent();
+        }}
         >
-            {/* Connecting dots */}
-            <div className="relative">
-                <div
-                    className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-3 h-3 bg-gray-400 rounded-full cursor-crosshair"
-                    onMouseUp={e => { e.stopPropagation(); endConnecting(e); }}
-                    onMouseDown={e => e.stopPropagation()}
-                />
-                <div
-                    className="absolute right-[-8px] top-1/2 -translate-y-1/2 w-3 h-3 bg-gray-400 rounded-full cursor-crosshair"
-                    onMouseDown={e => { e.stopPropagation(); startConnecting(e); }}
-                />
-                <div className="px-4 py-2 rounded">{comp.label}</div>
-            </div>
+        {/* HEADER */}
+        <div className="rounded-t px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r from-emerald-700 to-emerald-600">
+            {comp.label}
+        </div>
+
+        {/* BODY (black background) */}
+        <div
+            className="relative px-4 py-2 bg-[#1e1e1e] rounded-b"
+            style={{ minWidth: 160, height: rows * ROW_HEIGHT + 4 }}
+        >
+            {/* Draw all ports via absolute positioning */}
+            {inputs.map((p, idx) => renderInput(p.name, idx))}
+            {outputs.map((p, idx) => renderOutput(p.name, idx))}
+        </div>
         </div>
     );
 };
