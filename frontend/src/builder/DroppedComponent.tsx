@@ -19,8 +19,8 @@ const DroppedComponent = ({
 }: DroppedComponentProps) => {
     return (
         <div
-            className={`bg-white absolute rounded shadow cursor-move transition
-                        ${isSelected ? "ring-2 ring-blue-500" : ""}`}    /* blue outline when selected */
+            className={`bg-white absolute rounded shadow cursor-move transition z-2
+                        ${isSelected ? "ring-3 ring-blue-500" : ""}`}    /* blue outline when selected */
             style={{ left: comp.x, top: comp.y, transform: "translate(-50%, -50%)" }}
             onMouseDown={startDragging}
             onClick={e => { e.stopPropagation(); selectComponent(); }}    /* select on click */

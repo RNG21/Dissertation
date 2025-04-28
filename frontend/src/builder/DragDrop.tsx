@@ -15,6 +15,7 @@ interface DragDropAreaProps {
  *  components they were drawn between.
  */
 interface StickyLine {
+    id: string;
     sourceId: string;
     targetId: string;
     sourceOffsetX: number;
@@ -45,8 +46,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
     const selectComponent = (id: string | null) => setSelectedId(id);
 
-    const deleteSelected = () => {
-        if (selectedId === null) return;
+    const deleteComponent = () => {
         setDroppedComponents(prev =>
             prev.filter(comp => comp.id !== selectedId),
         );
@@ -54,11 +54,25 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
         setLines(prev =>
             prev.filter(l => l.sourceId !== selectedId && l.targetId !== selectedId),
         );
-        setSelectedId(null);
-    };
+    }
 
-    // hit Delete or Backspace to remove the selection
+    const deleteLine = () => {
+        setLines(prev => prev.filter(line => line.id !== selectedId));
+    }
+
+    const deleteSelected = () => {
+        if (selectedId === null) return;
+
+        if (selectedId.startsWith('line-')) {
+            deleteLine();
+        } else if (selectedId.startsWith('component-')) {
+            deleteComponent();
+        };
+        setSelectedId(null);
+    }
+
     useEffect(() => {
+        console.log(selectedId);
         const handleKey = (e: KeyboardEvent) => {
             if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId !== null) {
                 e.preventDefault();
@@ -67,7 +81,9 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
         };
         window.addEventListener('keydown', handleKey);
         return () => window.removeEventListener('keydown', handleKey);
-    }, [selectedId]); 
+    }, [selectedId]);
+
+    
 
     /* --------------------  Helpers -------------------- */
 
@@ -133,10 +149,11 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
             setTempLine(null);
             return;
         }
-
+        
         setLines(prev => [
             ...prev,
             {
+                id: `line-${prev.length}`,
                 sourceId: tempLine.sourceId,
                 targetId,
                 sourceOffsetX: tempLine.sourceOffsetX,
@@ -151,6 +168,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
     /* --------------------  Canvas event handlers -------------------- */
 
+    /* Handles mouseMove events in canvas*/
     const handleMouseMove = (e: React.MouseEvent) => {
         // They should never both run on the same mouse move
         if (draggingId !== null) {
@@ -160,11 +178,12 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
         }
     };
 
+    /* Handles mouseuU events in canvas*/
     const handleMouseUp = (e: React.MouseEvent) => {
         if (draggingId !== null) {
             endDragging();
         } else if (tempLine !== null) {
-            endConnecting(e, "");
+            endConnecting(e, "non connection");  // Mouse up in canvas therefore non connection
         }
     };
 
@@ -182,7 +201,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
         const rect = (e.target as HTMLDivElement).getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        setDroppedComponents(prev => [...prev, { ...component, id: prev.length, x, y }]);
+        setDroppedComponents(prev => [...prev, { ...component, id: `component-${prev.length}`, x, y }]);
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -192,7 +211,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
     /* --------------------  Helpers for rendering lines -------------------- */
 
     const renderStickyLines = () =>
-        lines.map((line, idx) => {
+        lines.map((line, i) => {
             const source = droppedComponents.find(c => c.id === line.sourceId);
             const target = droppedComponents.find(c => c.id === line.targetId);
             if (!source || !target) return null;
@@ -202,7 +221,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
             const endX = target.x + line.targetOffsetX;
             const endY = target.y + line.targetOffsetY;
 
-            return <CurvedLine key={idx} line={{ startX, startY, endX, endY }} />;
+            return <CurvedLine key={line.id} selectLine={() => selectComponent(line.id)} isSelected={selectedId === line.id} line={{ startX, startY, endX, endY }} />;
         });
 
     /* --------------------  Sidebar / Canvas layout -------------------- */
