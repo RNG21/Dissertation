@@ -4,7 +4,7 @@ import Base from '../base/base';
 import { Module } from '../types';
 
 import modules_ from "../modules.json";
-import ModulesGrid from './grid';
+import ModulesGrid from './ModulesGrid';
 const modules: Module[] = modules_;
 
 function Home() {
@@ -16,9 +16,15 @@ function Home() {
             </a>
         )
     )
+    
     return <Base 
         pageName={"Dashboard"}
-        mainContent={<ModulesGrid/>}
+        mainContent={
+            <div className="py-10 px-6">
+                <h1 className="text-2xl font-bold text-black dark:text-white mb-6">My Commands</h1>
+                <ModulesGrid />
+            </div>
+        }
         sidebarContent={sidebarContent}
     />;
 }

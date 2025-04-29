@@ -1,22 +1,3 @@
-# runner.py – v2.1
-"""Graph runner for the visual Discord‑flow builder.
-
-Fixes & improvements
---------------------
-* **Accepts raw dict or JSON string** – you can now pass the graph object
-  directly (no more ``json.dumps`` issues with non‑serialisable objects like
-  ``discord.Interaction``).
-* **Tolerates different edge key styles** – works with either
-  ``sourceId`` / ``targetId`` or the older ``sourceComponentId`` /
-  ``targetComponentId`` fields emitted by earlier UI drafts.
-* **Gracefully skips placeholder nodes** – special nodes such as the
-  visual‑editor’s start‑point (`code_id == "__slash__"`) are *stubs* that need
-  no Python implementation.  They’re considered satisfied once their output
-  ports are filled from the *constants* section.
-* **Multi‑port output support** – if a function declares several outputs and
-  returns a ``dict`` mapping *port → value*, each entry is fanned out to the
-  cache.  Single‑port nodes keep the simpler behaviour.
-"""
 from __future__ import annotations
 
 import asyncio
@@ -46,9 +27,9 @@ async def run_graph(
         Either the raw ``dict`` exported by the React canvas *or* its JSON
         representation.
     module_name:
-        Name of the Python module that contains the user’s *block* functions.
+        Name of the Python module that contains the user's *block* functions.
     **extra_ctx:
-        Variables that should be *implicitly* available to every block – e.g.
+        Variables that should be *implicitly* available to every block - e.g.
         the active Discord ``bot`` instance, the current ``interaction``, etc.
     """
 
