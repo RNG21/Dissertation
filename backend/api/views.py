@@ -35,3 +35,15 @@ class FlowsView(APIView):
             return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
         
         return FlowsView.save_flow(request, instance)
+
+    def delete(self, request, format=None):
+        flowId = request.data.get("flowId")
+        if not flowId:
+            return Response({"error": "Flow ID required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            flow = Flows.objects.get(pk=flowId)
+            flow.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Flows.DoesNotExist:
+            return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)

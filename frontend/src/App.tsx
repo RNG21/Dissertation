@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './home';
+import Home from './home/home';
 import Asd from './builder/DragDrop';
 import CurvedLine from './builder/CurvedLine';
 import { useState } from 'react';
