@@ -5,6 +5,7 @@ import { Module } from '../types';
 
 import modules_ from "../modules.json";
 import ModulesGrid from './ModulesGrid';
+import TokenInput from './TokenInput';
 const modules: Module[] = modules_;
 
 function Home() {
@@ -21,6 +22,8 @@ function Home() {
         pageName={"Dashboard"}
         mainContent={
             <div className="py-10 px-6">
+                <h1 className="text-2xl font-bold text-black dark:text-white mb-6">Run Bot</h1>
+                <TokenInput/>
                 <h1 className="text-2xl font-bold text-black dark:text-white mb-6">My Commands</h1>
                 <ModulesGrid />
             </div>

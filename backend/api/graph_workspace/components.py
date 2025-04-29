@@ -5,8 +5,8 @@ from discord import Interaction
 from discord import Message
 from discord.abc import Messageable
 
-import globals
-from blocks import block
+import api.graph_workspace.globals as globals
+from .blocks import block
 
 
 @block("Set Bot Token")

@@ -1,12 +1,16 @@
+import os
 import discord
 import json
 import pathlib
 from inspect import Parameter, Signature
 
-from graph_runner import run_graph
+import requests
+from .graph_runner import run_graph
+import api.graph_workspace.globals as globals
 from discord import app_commands
 
-import globals
+
+API_BASE_URL = os.environ.get('API_BASE_URL', "http://127.0.0.1:8000")
 
 
 class FlowBot(discord.Client):
@@ -15,7 +19,7 @@ class FlowBot(discord.Client):
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self):
-        flow = json.loads((pathlib.Path(__file__).parent / 'flow.json').read_text(encoding='utf-8'))
+        flows = requests.get(f'{API_BASE_URL}/api/flows').json()
 
         PY_TYPES = {"string": str, "integer": int, "boolean": bool}
 
@@ -51,7 +55,7 @@ class FlowBot(discord.Client):
 
                 await run_graph(
                     flow_with_const,              # no json.dumps needed
-                    module_name="components",
+                    module_name="api.graph_workspace.components",
                     bot=interaction.client,
                     interaction=interaction,
                 )
@@ -61,29 +65,32 @@ class FlowBot(discord.Client):
 
             # ---------- stitch the signature in ----------
             _handler.__signature__ = Signature((
-                Parameter("interaction",
-                        kind=Parameter.POSITIONAL_OR_KEYWORD,
-                        annotation=discord.Interaction),
+                Parameter(
+                    "interaction",
+                    kind=Parameter.POSITIONAL_OR_KEYWORD,
+                    annotation=discord.Interaction
+                ),
                 *extra_params
             ))
 
             return _handler
 
         # Register one slash command for each start_command node
-        for node in flow["nodes"]:
-            if node["code_id"] != "__slash__":
-                continue
-            cmd_name = node["command"]
-            handler  = build_handler(node, flow)
+        for flow in flows:
+            for node in flow["nodes"]:
+                if node["code_id"] != "__slash__":
+                    continue
+                cmd_name = node["command"]
+                handler  = build_handler(node, flow)
 
-            # Register it manually via Command object
-            self.tree.add_command(
-                app_commands.Command(
-                    name        = cmd_name,
-                    description = node["description"],
-                    callback    = handler,
+                # Register it manually via Command object
+                self.tree.add_command(
+                    app_commands.Command(
+                        name        = cmd_name,
+                        description = node["description"],
+                        callback    = handler,
+                    )
                 )
-            )
 
         await self.tree.sync()
 

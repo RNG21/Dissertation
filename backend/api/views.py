@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from .models import Flows
 from .serializers import FlowSerializer
 
+from .graph_workspace import globals, runbot
 
 class FlowsView(APIView):
     @staticmethod
@@ -48,3 +49,8 @@ class FlowsView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Flows.DoesNotExist:
             return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class RunBotView(APIView):
+    def post(self, request: Request, format=None):
+        globals.TOKEN = request.data['token']
+        runbot.FlowBot().run(globals.TOKEN)
