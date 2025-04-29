@@ -1,7 +1,7 @@
 # Dockerfile
 
 # Base image
-FROM python:3.11-slim
+FROM python:3.12
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -10,16 +10,12 @@ ENV PYTHONUNBUFFERED 1
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y netcat gcc postgresql-client
+# Copy project
+COPY . .
 
-# Install Python dependencies
-COPY requirements.txt /app/
+# Install python packages
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-
-# Copy project
-COPY . /app/
 
 # Expose port 8000
 EXPOSE 8000
