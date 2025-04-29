@@ -1,88 +1,189 @@
-# runner.py
-import asyncio, importlib, inspect, json, types
-from typing import Any, Dict, Tuple
+# runner.py – v2.1
+"""Graph runner for the visual Discord‑flow builder.
 
-PortKey = Tuple[str, str]              # (componentId, portName)
+Fixes & improvements
+--------------------
+* **Accepts raw dict or JSON string** – you can now pass the graph object
+  directly (no more ``json.dumps`` issues with non‑serialisable objects like
+  ``discord.Interaction``).
+* **Tolerates different edge key styles** – works with either
+  ``sourceId`` / ``targetId`` or the older ``sourceComponentId`` /
+  ``targetComponentId`` fields emitted by earlier UI drafts.
+* **Gracefully skips placeholder nodes** – special nodes such as the
+  visual‑editor’s start‑point (`code_id == "__slash__"`) are *stubs* that need
+  no Python implementation.  They’re considered satisfied once their output
+  ports are filled from the *constants* section.
+* **Multi‑port output support** – if a function declares several outputs and
+  returns a ``dict`` mapping *port → value*, each entry is fanned out to the
+  cache.  Single‑port nodes keep the simpler behaviour.
+"""
+from __future__ import annotations
 
-async def run_graph(graph_json: str, module_name: str, **extra_ctx) -> Dict[PortKey, Any]:
-    mod = importlib.import_module(module_name)
-    graph = json.loads(graph_json)
-    nodes = {n["id"]: n for n in graph["nodes"]}
-    edges = graph["edges"]
-    consts = graph.get("constants", {})
+import asyncio
+import importlib
+import inspect
+import json
+from types import MappingProxyType
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Union
 
-    # Where computed values are stored
-    cache: Dict[PortKey, Any] = {tuple(k.split(".", 1)): v for k, v in consts.items()}
+# A value in the cache is uniquely identified by *component‑id* & *port‑name*
+PortKey = Tuple[str, str]  # (componentId, portName)
 
-    # Build adjacency + indegree for Kahn topo-sort
-    incoming = {n["id"]: 0 for n in nodes.values()}
-    adj: Dict[str, list[str]] = {n["id"]: [] for n in nodes.values()}
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+async def run_graph(
+    graph: Union[str, Mapping[str, Any]],
+    module_name: str,
+    **extra_ctx: Any,
+) -> Dict[PortKey, Any]:
+    """Execute *graph* and return a mapping of ``(nodeId, port) → value``.
+
+    Parameters
+    ----------
+    graph:
+        Either the raw ``dict`` exported by the React canvas *or* its JSON
+        representation.
+    module_name:
+        Name of the Python module that contains the user’s *block* functions.
+    **extra_ctx:
+        Variables that should be *implicitly* available to every block – e.g.
+        the active Discord ``bot`` instance, the current ``interaction``, etc.
+    """
+
+    # --------------------  normalise input --------------------
+    if isinstance(graph, str):  # JSON string → dict
+        graph_dict: Mapping[str, Any] = json.loads(graph)
+    else:
+        graph_dict = graph  # already a mapping
+
+    nodes: Dict[str, Mapping[str, Any]] = {n["id"]: n for n in graph_dict["nodes"]}
+    edges: List[Mapping[str, Any]] = list(graph_dict["edges"])
+    consts: Mapping[str, Any] = graph_dict.get("constants", {})
+
+    # Cache starts pre‑filled with constants ("component.port" → value)
+    cache: Dict[PortKey, Any] = {
+        tuple(k.split(".", 1)): v for k, v in consts.items()
+    }
+
+    # --------------------  edge helpers -----------------------
+    def _src(e: Mapping[str, Any]) -> str:  # type: ignore[override]
+        return e.get("sourceId") or e.get("sourceComponentId")  # type: ignore[index]
+
+    def _tgt(e: Mapping[str, Any]) -> str:  # type: ignore[override]
+        return e.get("targetId") or e.get("targetComponentId")  # type: ignore[index]
+
+    # ------------------------------------------------------------------
+    # Build adjacency lists for a *Kahn* topological sort
+    # ------------------------------------------------------------------
+    incoming: Dict[str, int] = {nid: 0 for nid in nodes}
+    adj: Dict[str, List[str]] = {nid: [] for nid in nodes}
+
     for e in edges:
-        adj[e["sourceComponentId"]].append(e["targetComponentId"])
-        incoming[e["targetComponentId"]] += 1
+        s, t = _src(e), _tgt(e)
+        if s not in nodes or t not in nodes:
+            continue  # ignore dangling edges
+        adj[s].append(t)
+        incoming[t] += 1
 
-    queue = [nid for nid, deg in incoming.items() if deg == 0]
+    queue: List[str] = [nid for nid, deg in incoming.items() if deg == 0]
 
-    async def _exec(node_id: str):
+    # -------- import user module once ---------------------------------
+    mod = importlib.import_module(module_name)
+
+    # --------------------  node execution ------------------------------
+    async def exec_node(node_id: str) -> None:
         node = nodes[node_id]
-        fn = getattr(mod, node["code_id"])
+        code_id = node["code_id"]
+
+        # *Placeholder* nodes (e.g. "__slash__") have no backing function.
+        if not hasattr(mod, code_id):
+            return  # nothing to execute – their outputs come from constants
+
+        fn = getattr(mod, code_id)
         sig = inspect.signature(fn)
 
+        # -------- build **kwargs for the call ---------------------
         kwargs: Dict[str, Any] = {}
+        for port in node.get("inputs", []):
+            pname: str = port["name"]
+            key: PortKey = (node_id, pname)
 
-        for port in node["inputs"]:
-            pname = port["name"]
-            key = (node_id, pname)
-
+            # 1️⃣ constant / previously‑computed value ------------------
             if key in cache:
                 kwargs[pname] = cache[key]
                 continue
 
+            # 2️⃣ connected edge ---------------------------------------
             edge = next(
-                (e for e in edges
-                if e["targetComponentId"] == node_id
-                and e["targetPort"] == pname),
+                (
+                    e
+                    for e in edges
+                    if _tgt(e) == node_id and e["targetPort"] == pname
+                ),
                 None,
             )
-            if edge:
-                val_key = (edge["sourceComponentId"], edge["sourcePort"])
+            if edge is not None:
+                val_key = (_src(edge), edge["sourcePort"])
                 kwargs[pname] = cache[val_key]
                 continue
 
-            # ---- 3️⃣ default value? -------------------------------------
+            # 3️⃣ default specified in function signature --------------
             param = sig.parameters.get(pname)
-            if param and param.default is not inspect._empty:
+            if param and param.default is not inspect._empty:  # type: ignore[attr-defined]
                 kwargs[pname] = param.default
                 continue
 
-            # ---- 4️⃣ still nothing → explicit error ---------------------
+            # 4️⃣ total failure → explicit error -----------------------
             raise ValueError(
-                f"Input port '{pname}' on node '{node['label']}' "
-                f"(componentId={node_id}) is unconnected and has no default or constant."
+                f"Input port '{pname}' on node '{node['label']}' (id={node_id}) "
+                "is unconnected and has no default or constant value."
             )
 
-        # ---------- inject extra_ctx only if accepted ----------
-        accepts_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD
-                            for p in sig.parameters.values())
-
-        if accepts_kwargs:
+        # -------- inject **extra_ctx if accepted -------------------
+        if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
+            # function has a **kwargs – give it everything
             kwargs.update(extra_ctx)
         else:
-            for name in sig.parameters:
-                if name in extra_ctx and name not in kwargs:
-                    kwargs[name] = extra_ctx[name]
+            # only pass named extra vars the function explicitly wants
+            for name, val in extra_ctx.items():
+                if name in sig.parameters and name not in kwargs:
+                    kwargs[name] = val
 
-        # ---------- call & await ----------
+        # -------- call (and await if needed) ----------------------
         result = fn(**kwargs)
         if inspect.isawaitable(result):
             result = await result
-        cache[(node_id, "result")] = result
 
+        # -------- fan‑out result to cache -------------------------
+        outs = node.get("outputs", [])
+        if not outs:
+            return  # nothing declared → nothing stored
 
-    # topo-sorted execution
+        if len(outs) == 1:
+            cache[(node_id, outs[0]["name"])] = result
+        else:
+            # Multiple declared outputs – expect a mapping from fn
+            if not isinstance(result, Mapping):
+                raise TypeError(
+                    f"Block '{code_id}' declares {len(outs)} outputs but returned a "
+                    f"{type(result).__name__}; expected a dict port→value."
+                )
+            for port_meta in outs:
+                pname = port_meta["name"]
+                if pname not in result:
+                    raise KeyError(
+                        f"Block '{code_id}' did not return a value for output port '{pname}'."
+                    )
+                cache[(node_id, pname)] = result[pname]
+
+    # ------------------------------------------------------------------
+    # Topological execution (Kahn)
+    # ------------------------------------------------------------------
     while queue:
         nid = queue.pop(0)
-        await _exec(nid)
+        await exec_node(nid)
         for m in adj[nid]:
             incoming[m] -= 1
             if incoming[m] == 0:

@@ -156,14 +156,14 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
   const endConnecting = (e: React.MouseEvent, targetId: string, port: string) => {
     if (!tempLine) return;
     e.stopPropagation();
-
+  
     const { x: endX, y: endY } = getCanvasCoords(e);
     const target = droppedComponents.find(c => c.id === targetId);
-    if (!target || lines.find(l => l.targetId === targetId)) {
+    if (!target || lines.find(l => l.targetPort === port)) {
       setTempLine(null);
       return;
     }
-
+  
     setLines(prev => [
       ...prev,
       {
@@ -178,7 +178,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
         targetOffsetY: endY - target.y
       }
     ]);
-
+  
     setTempLine(null);
   };
 

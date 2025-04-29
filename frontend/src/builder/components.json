@@ -24,6 +24,31 @@
     ]
   },
   {
+    "code_id": "get_var",
+    "label": "Get Variable",
+    "doc": "Gets value of a variable",
+    "inputs": [
+      {
+        "name": "name",
+        "type": "string",
+        "desc": "The variable name to look up."
+      },
+      {
+        "name": "default",
+        "type": "Any",
+        "desc": "Optional value to return if the variable is missing.",
+        "default": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output",
+        "type": "Any",
+        "desc": "The current value of the variable (or *default* if absent)."
+      }
+    ]
+  },
+  {
     "code_id": "random_int",
     "label": "Random Number",
     "doc": "Generates a random number",
@@ -56,13 +81,37 @@
     "inputs": [
       {
         "name": "channel_id",
-        "type": "number | TextChannel",
+        "type": "number | Messageable",
         "desc": "ID of channel to send the message to"
       },
       {
         "name": "text",
         "type": "string | Message",
         "desc": "The message to send"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output",
+        "type": "void",
+        "desc": ""
+      }
+    ]
+  },
+  {
+    "code_id": "set_var",
+    "label": "Set Variable",
+    "doc": "Set or create a variable",
+    "inputs": [
+      {
+        "name": "name",
+        "type": "string",
+        "desc": "Variable name"
+      },
+      {
+        "name": "value",
+        "type": "Any",
+        "desc": "The value to store."
       }
     ],
     "outputs": [

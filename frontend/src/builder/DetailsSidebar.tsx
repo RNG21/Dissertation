@@ -14,26 +14,6 @@ interface DetailsSidebarProps {
 const DetailsSidebar: React.FC<DetailsSidebarProps> = ({ comp, meta, edges, onClose, updateField }) => {
   const isSlash = comp.code_id === "__slash__";
 
-  /**
-   * Returns a human‑readable description of what feeds *argName*:
-   *   • "⇐ component‑7.result" when connected.
-   *   • The constant stored directly on the node (e.g. "42").
-   *   • 𝙪𝙣𝙙𝙚𝙛𝙞𝙣𝙚𝙙 → means the socket is still free.
-   */
-  const getArgSource = (argName: string): string | undefined => {
-    const edge = edges.find(e => e.targetId === comp.id && e.targetPort === argName);
-    if (edge) return `⇐ ${edge.sourceId}.${edge.sourcePort}`;
-
-    // constant value stored on the node itself (if you support that)
-    // @ts‑ignore – we allow arbitrary extra props on DroppedComponent
-    // eslint‑disable‑next‑line  @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (comp[argName] !== undefined) return JSON.stringify(comp[argName]);
-
-    // not wired and no constant – leave undefined so the caller can render an <input>
-    return undefined;
-  };
-
   /** Convenience helper: fetch possible default from the meta‑schema. */
   const getDefault = (argName: string) => {
     // meta.inputs may or may not include a `default` key – treat defensively

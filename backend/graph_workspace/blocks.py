@@ -6,11 +6,9 @@ from types import NoneType, UnionType
 from typing import Any, Dict, List, get_origin, get_args
 
 
-# ------------------------ Decorator -------------------------
-
+# Decorator
 def block(label: str | None = None):
-    """Mark a function as a *block* and optionally override the label shown in
-    the visual editor."""
+    """Mark a function as a block"""
 
     def _wrap(fn):
         fn.__block_label__ = label or fn.__name__
@@ -18,26 +16,16 @@ def block(label: str | None = None):
 
     return _wrap
 
-
-# ----------------- Python to TypeScript mapping ---------------
-
 def _py_type_to_ts(t: Any, *, is_return: bool = False) -> str:
-    """Convert a Python annotation *t* into a TypeScript-ish string.
+    """Convert a Python annotation *t* into a TypeScript-ish string."""
 
-    • Primitive built-ins  →  ``number``/``string``/…
-    • ``None``             →  ``void`` (if return-pos) or ``null``
-    • Unions (``int | Foo`` or ``Union[int, Foo]``)
-      become  ``number | Foo``
-    • Any other class      →  its bare class-name
-    """
-
-    # ---- 1.  handle Union[...] or “A | B” ---------------------------------
+    # handle union
     origin = get_origin(t)
-    if origin is UnionType or origin is list.__class__:  # Py≤3.9 uses typing.Union
+    if origin is UnionType or origin is list.__class__:
         parts = [_py_type_to_ts(arg, is_return=is_return) for arg in get_args(t)]
         return " | ".join(parts)
 
-    # ---- 2.  None / primitives -------------------------------------------
+    # primitives
     if t in (None, NoneType):
         return "void" if is_return else "null"
 
@@ -45,7 +33,7 @@ def _py_type_to_ts(t: Any, *, is_return: bool = False) -> str:
     if t in primitives:
         return primitives[t]
 
-    # ---- 3.  fallback → use the bare class / typing-alias name ------------
+    # use bare class
     return getattr(t, "__name__", str(t))
 
 
@@ -90,13 +78,13 @@ def build_components_json(module) -> List[Dict[str, Any]]:
         doc = inspect.getdoc(fn) or ""
         parsed_doc = _parse_docstring(doc)
 
-        # Build a *arg -> default* mapping -------------------------------------------------
+        # Build a for arg default values
         defaults: Dict[str, Any] = {}
         if spec.defaults:
             for arg_name, default in zip(spec.args[-len(spec.defaults) :], spec.defaults):
                 defaults[arg_name] = default
 
-        # Inputs ---------------------------------------------------------------------------
+        # Inputs
         inputs = [
             {
                 "name": arg,
@@ -107,7 +95,7 @@ def build_components_json(module) -> List[Dict[str, Any]]:
             for arg in spec.args
         ]
 
-        # Outputs (only a single *result* port for now) ------------------------------------
+        # Outputs
         ret_ann = spec.annotations.get("return", None)
         outputs = [{
             "name": "output",
@@ -127,8 +115,6 @@ def build_components_json(module) -> List[Dict[str, Any]]:
 
     return comps
 
-
-# ------------------------- CLI ------------------------------
 
 if __name__ == "__main__":
     import components as blocks

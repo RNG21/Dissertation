@@ -1,56 +1,28 @@
 {
   "nodes": [
     {
-      "code_id": "random_int",
-      "label": "Random Number",
-      "doc": "Generates a random number",
-      "inputs": [
-        {
-          "name": "low",
-          "type": "number",
-          "desc": "minimum number (inclusive)",
-          "default": 1
-        },
-        {
-          "name": "high",
-          "type": "number",
-          "desc": "maximum number (inclusive)",
-          "default": 10
-        }
-      ],
-      "outputs": [
-        {
-          "name": "output",
-          "type": "number",
-          "desc": "A random number between the range provided"
-        }
-      ],
-      "id": "component-0",
-      "x": 293,
-      "y": 423
-    },
-    {
-      "code_id": "start_command",
+      "code_id": "__slash__",
       "label": "Slash Command",
-      "doc": "Entry point for a Discord slash-command flow.",
-      "inputs": [
-        {
-          "name": "command_name",
-          "type": "string",
-          "desc": "the name of the slash command (no leading '/')"
-        }
-      ],
+      "doc": "Discord slash command entry-point",
+      "inputs": [],
       "outputs": [
         {
-          "name": "output",
+          "name": "ctx",
           "type": "Interaction",
-          "desc": "the incoming Interaction object"
+          "desc": "discord.py interaction"
         }
       ],
-      "id": "component-1",
-      "x": 260,
-      "y": 234,
-      "command_name": "a"
+      "id": "component-2",
+      "x": 309,
+      "y": 456,
+      "command": "echo",
+      "description": "Says hello",
+      "options": [
+        {
+          "name": "content",
+          "type": "string"
+        }
+      ]
     },
     {
       "code_id": "send",
@@ -59,7 +31,7 @@
       "inputs": [
         {
           "name": "channel_id",
-          "type": "number | TextChannel",
+          "type": "number | Messageable",
           "desc": "ID of channel to send the message to"
         },
         {
@@ -75,10 +47,33 @@
           "desc": ""
         }
       ],
-      "id": "component-2",
-      "x": 434,
-      "y": 601
+      "id": "component-3",
+      "x": 791,
+      "y": 456
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "id": "line-1",
+      "sourceId": "component-2",
+      "sourcePort": "content",
+      "targetId": "component-3",
+      "targetPort": "text",
+      "sourceOffsetX": 90,
+      "sourceOffsetY": 26,
+      "targetOffsetX": -92,
+      "targetOffsetY": 18
+    },
+    {
+      "id": "line-1",
+      "sourceId": "component-2",
+      "sourcePort": "ctx",
+      "targetId": "component-3",
+      "targetPort": "channel_id",
+      "sourceOffsetX": 93,
+      "sourceOffsetY": -2,
+      "targetOffsetX": -91,
+      "targetOffsetY": 1
+    }
+  ]
 }

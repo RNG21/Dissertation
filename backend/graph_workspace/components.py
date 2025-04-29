@@ -1,10 +1,31 @@
 from blocks import block
+from typing import Any
 import random
 import globals
 import discord 
-from discord import Message, TextChannel
+from discord import Message
+from discord.abc import Messageable
 from blocks import block
 from discord import Interaction
+
+@block("Get Variable")
+def get_var(name: str, default: Any = None) -> Any:
+    """Gets value of a variable
+
+    :param name: The variable name to look up.
+    :param default: Optional value to return if the variable is missing.
+    :return: The current value of the variable (or *default* if absent).
+    """
+    return getattr(globals, name, default)
+
+@block("Set Variable")
+def set_var(name: str, value: Any) -> None:
+    """Set or create a variable
+
+    :param name: Variable name
+    :param value: The value to store.
+    """
+    setattr(globals, name, value)
 
 @block("Random Number")
 def random_int(low: int = 1, high: int = 10) -> int:
@@ -17,18 +38,20 @@ def random_int(low: int = 1, high: int = 10) -> int:
     return random.randint(low, high)
 
 @block("Send Message")
-async def send(channel_id: int | TextChannel, text: str | Message) -> None:
+async def send(channel_id: int | Messageable, text: str | Message) -> None:
     """Sends a message to a channel
 
     :param channel_id: ID of channel to send the message to
     :param text: The message to send
     """
-    if isinstance(channel_id, TextChannel):
+    if isinstance(channel_id, Messageable):
         channel = channel_id
+    elif isinstance(channel_id, Interaction):
+        channel = channel_id.channel
     elif type(channel_id) == int:
         channel = globals.bot.fetch_channel(channel_id)
     else:
-        raise Exception("Parameter \"channel_id\" must be either integer or a TextChannel object")
+        raise Exception("Parameter \"channel_id\" must be either integer or a Messageable")
     await channel.send(text)
 
 @block("Edit Message")
