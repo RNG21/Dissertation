@@ -3,8 +3,7 @@ import json
 import pathlib
 from inspect import Parameter, Signature
 
-from api.models import Flows
-from backend.graph_workspace.graph_runner import run_graph
+from graph_runner import run_graph
 from discord import app_commands
 
 import globals

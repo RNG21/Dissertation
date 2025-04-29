@@ -1,14 +1,11 @@
 import random
-import shit
 from typing import Any
 
-import discord
 from discord import Interaction
 from discord import Message
 from discord.abc import Messageable
 
 import globals
-from blocks import block
 from blocks import block
 
 

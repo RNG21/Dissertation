@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import asyncio
 import importlib
 import inspect
 import json
-from types import MappingProxyType
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Union
+from typing import Any, Dict, List, Mapping, Tuple, Union
 
 # A value in the cache is uniquely identified by *component‑id* & *port‑name*
 PortKey = Tuple[str, str]  # (componentId, portName)
