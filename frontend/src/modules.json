@@ -1,33 +1,9 @@
 [
     {
-      "title": "Custom Commands",
-      "description": "Create complex slash commands to personalize your bot",
+      "title": "New Command",
+      "description": "Create a new slash commands to personalize your bot",
       "icon": "✏️",
       "url": "command_builder"
-    },
-    {
-      "title": "Custom Events",
-      "description": "Create complex events to personalize your bot",
-      "icon": "📅",
-      "url": ""
-    },
-    {
-      "title": "Timed Events",
-      "description": "Trigger custom events through schedules or intervals",
-      "icon": "⏰",
-      "url": ""
-    },
-    {
-      "title": "Data Storage",
-      "description": "Create custom variables to store data for your bot",
-      "icon": "💾",
-      "url": ""
-    },
-    {
-      "title": "Webhooks",
-      "description": "Trigger custom events through webhooks",
-      "icon": "🌐",
-      "url": ""
     }
   ]
   

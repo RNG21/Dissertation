@@ -1,8 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 
 import {
   DroppedComponent as DroppedComponent_,
-  Component as Component_
+  Component as Component_,
+  StartComponent,
+  StickyLine,
+  TempLine,
+  Flow
 } from "../types";
 import componentsList from "./components.json" with { type: "json" };
 import Component from "./Component";
@@ -14,31 +19,6 @@ import Base from "../base/base";
 
 interface DragDropAreaProps {
   pageName: string;
-}
-
-/** A permanent connection that keeps its endpoints stuck to the
- *  components they were drawn between.
- */
-interface StickyLine {
-  id: string;
-  sourceId: string;
-  sourcePort: string;
-  targetId: string;
-  targetPort: string;
-  sourceOffsetX: number;
-  sourceOffsetY: number;
-  targetOffsetX: number;
-  targetOffsetY: number;
-}
-
-/** A line that is being drawn right now (mouse is still held down). */
-interface TempLine {
-  sourceId: string;
-  sourcePort: string;
-  sourceOffsetX: number;
-  sourceOffsetY: number;
-  endX: number;
-  endY: number;
 }
 
 const palette: Component_[] = [
@@ -56,7 +36,7 @@ const palette: Component_[] = [
 
 const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
   /* ---------- canvas state ---------- */
-  const [droppedComponents, setDroppedComponents] = useState<DroppedComponent_[]>([]);
+  const [droppedComponents, setDroppedComponents] = useState<(DroppedComponent_|StartComponent)[]>([]);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -65,7 +45,18 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const [detailsId, setDetailsId] = useState<string | null>(null);
+  const [flowId, setFlowId] = useState<string | null>(null);
 
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFlow: Flow = location.state?.flow;
+    if (initialFlow) {
+      setDroppedComponents(initialFlow.nodes);
+      setLines(initialFlow.edges);
+      setFlowId(initialFlow.flowId!);
+    }
+  }, [location.state]);
 
   /* ---------- selection / deletion helpers ---------- */
 
@@ -229,7 +220,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
           options: []
         }
       ]);
-      return;                    // ⬅️ stop – we handled it
+      return;             
     }
     /* ---- normal components fall through ------------------------- */
   
@@ -294,21 +285,39 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({ pageName }) => {
 
       <button
         className="ml-4 px-2 py-1 bg-blue-600 text-white rounded"
-        onClick={() => {
-          const flow = {
+        onClick={async () => {
+          const body = {
             nodes: droppedComponents,
             edges: lines,
-          };
-          const blob = new Blob([JSON.stringify(flow, null, 2)], { type: "application/json" });
-          const url  = URL.createObjectURL(blob);
-          const a    = document.createElement("a");
-          a.href     = url;
-          a.download = "flow.json";
-          a.click();
-          URL.revokeObjectURL(url);
+            name: (()=>(droppedComponents.find(c => c.code_id === "__slash__") as StartComponent).command)(),  // node with __slash__ is defo StartComponent
+            flowId: flowId
+          }
+
+          try {
+            const response = await fetch('/api/flows/', {
+              method: flowId ? 'PUT':'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(body),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              setFlowId(data.flowId);
+              alert(`Saved successfully! ID: ${data.flowId}`);
+            } else {
+              const error = await response.json();
+              console.error(error);
+              alert('Failed to save flow.');
+            }
+          } catch (error) {
+            console.error(error);
+            alert('An error occurred while saving.');
+          }
         }}
       >
-        Export JSON
+        Save
       </button>
 
       {droppedComponents.map(comp => (

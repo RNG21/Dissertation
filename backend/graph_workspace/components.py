@@ -8,6 +8,15 @@ from discord.abc import Messageable
 from blocks import block
 from discord import Interaction
 
+
+@block("Set Bot Token")
+def set_var(token: str) -> None:
+    """Set the bot's token
+
+    :param token: The bot's token aquired from discord developer portal
+    """
+    setattr(globals, "TOKEN", token)
+
 @block("Get Variable")
 def get_var(name: str, default: Any = None) -> Any:
     """Gets value of a variable

@@ -29,6 +29,12 @@ export interface DroppedComponent extends Component {
     x: number;
     y: number;
 }
+
+export interface StartComponent extends DroppedComponent {
+    command: string,
+    description: string,
+    options: []
+}
   
 /** Simple Bézier rendered by <CurvedLine/> */
 export interface ConnectingLine {
@@ -56,5 +62,35 @@ export interface SlashCommandNode extends DroppedComponent {
     options: SlashOption[];
 }
 
-
+/** A permanent connection that keeps its endpoints stuck to the
+ *  components they were drawn between.
+ */
+export interface StickyLine {
+    id: string;
+    sourceId: string;
+    sourcePort: string;
+    targetId: string;
+    targetPort: string;
+    sourceOffsetX: number;
+    sourceOffsetY: number;
+    targetOffsetX: number;
+    targetOffsetY: number;
+}
   
+/** A line that is being drawn right now (mouse is still held down). */
+export interface TempLine {
+    sourceId: string;
+    sourcePort: string;
+    sourceOffsetX: number;
+    sourceOffsetY: number;
+    endX: number;
+    endY: number;
+}
+  
+export interface Flow {
+    nodes: DroppedComponent[],
+    edges: StickyLine[],
+    name?: string,
+    flowId?: string
+}
+
