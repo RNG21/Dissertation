@@ -1,12 +1,15 @@
-from blocks import block
-from typing import Any
 import random
-import globals
-import discord 
+import shit
+from typing import Any
+
+import discord
+from discord import Interaction
 from discord import Message
 from discord.abc import Messageable
+
+import globals
 from blocks import block
-from discord import Interaction
+from blocks import block
 
 
 @block("Set Bot Token")

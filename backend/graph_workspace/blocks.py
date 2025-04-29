@@ -2,7 +2,7 @@ import inspect
 import json
 import pathlib
 import re
-from types import NoneType, UnionType    
+from types import NoneType, UnionType
 from typing import Any, Dict, List, get_origin, get_args
 
 

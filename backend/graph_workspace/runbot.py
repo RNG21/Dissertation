@@ -1,9 +1,13 @@
-import json, pathlib, discord
-from discord import app_commands
-from backend.graph_workspace.graph_runner import run_graph
-import globals               
+import discord
+import json
+import pathlib
 from inspect import Parameter, Signature
+
 from api.models import Flows
+from backend.graph_workspace.graph_runner import run_graph
+from discord import app_commands
+
+import globals
 
 
 class FlowBot(discord.Client):
