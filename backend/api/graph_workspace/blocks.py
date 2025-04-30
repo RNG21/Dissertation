@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
     comps = build_components_json(blocks)
 
-    outfile = pathlib.Path(__file__).with_name("components.json")
+    outfile = pathlib.Path(__file__).resolve().parents[3] / "frontend" / "src" / "builder" / "components.json"
     with open(outfile, "w", encoding="utf-8") as fp:
         json.dump(comps, fp, indent=2)
     print(f"Wrote {outfile}\nGenerated {len(comps)} components.")

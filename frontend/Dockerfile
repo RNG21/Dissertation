@@ -1,21 +1,13 @@
-# Excpected dir: frontend
-FROM node:20-alpine AS builder
-
-# Install dependencies
+# docker build . -t frontend
+FROM node:18-alpine AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --production=false
-
-# Copy source and build
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN yarn build
 
-### ---- Production stage ----
-FROM nginx:1.25-alpine AS production
-
-# Copy built assets
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Expose port and start server
+# Serve with Nginx
+FROM nginx:stable-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
