@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-9xtrc&2gzrsd*y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-domain = os.environ.get('DOMAIN_NAME', '*')
+domain = os.environ.get('DOMAIN_NAME')
 ALLOWED_HOSTS = [domain, '127.0.0.1'] if domain else ['127.0.0.1']
 
 # Application definition
